@@ -77,7 +77,7 @@
 
     "subnetRef": "[concat(variables('vnetID'), '/subnets/subnet')]",
 
-    "foundryHubName": ""[concat('foundry-', parameters('DeploymentID'))]"",
+    "foundryHubName": "[concat('foundry-', parameters('DeploymentID'))]",
 
     "foundryProjectName": "[concat('foundry-project-', parameters('DeploymentID'))]",
 
