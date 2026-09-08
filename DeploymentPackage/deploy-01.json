@@ -77,9 +77,9 @@
 
     "subnetRef": "[concat(variables('vnetID'), '/subnets/subnet')]",
 
-    "foundryHubName": "[toLower(concat('foundry', uniqueString(resourceGroup().id, parameters('DeploymentID'))))]",
+    "foundryHubName": ""[concat('foundry-', parameters('DeploymentID'))]"",
 
-    "foundryProjectName": "[concat('foundry-project', parameters('DeploymentID'))]",
+    "foundryProjectName": "[concat('foundry-project-', parameters('DeploymentID'))]",
 
     "soraDeploymentName": "sora2-campaign",
 
