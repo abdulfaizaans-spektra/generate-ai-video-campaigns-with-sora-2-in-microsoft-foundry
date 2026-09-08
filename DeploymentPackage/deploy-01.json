@@ -37,7 +37,7 @@
   },
 
   "variables": {
-    "scripturl": "[concat('https://experienceazure.blob.core.windows.net/templates/', parameters('ODLID'), '/psscript-01.ps1')]",
+    "scripturl": "https://raw.githubusercontent.com/abdulfaizaans-spektra/generate-ai-video-campaigns-with-sora-2-in-microsoft-foundry/refs/heads/cloudlabs/v1-generate-ai-video-campaigns-with-sora-2--20260908/DeploymentPackage/psscript-01.ps1",
 
     "userdata": "[concat('$url = \"', variables('scripturl'), '\"; $arg = \"', variables('arg'), '\"')]",
 
