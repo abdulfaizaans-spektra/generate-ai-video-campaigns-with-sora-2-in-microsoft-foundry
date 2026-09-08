@@ -1,0 +1,420 @@
+{
+  "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "azureUserName": {
+      "type": "string"
+    },
+    "azurePassword": {
+      "type": "securestring"
+    },
+    "ODLID": {
+      "type": "string"
+    },
+    "DeploymentID": {
+      "type": "string"
+    },
+    "adminUsername": {
+      "type": "string"
+    },
+    "adminPassword": {
+      "type": "securestring"
+    },
+    "trainerUserName": {
+      "type": "string"
+    },
+    "trainerUserPassword": {
+      "type": "string"
+    },
+    "location": {
+      "type": "string",
+      "defaultValue": "[resourceGroup().location]",
+      "metadata": {
+        "description": "Azure region for the Lab VM and networking resources."
+      }
+    },
+    "foundryLocation": {
+      "type": "string",
+      "defaultValue": "eastus2",
+      "allowedValues": [
+        "eastus2"
+      ],
+      "metadata": {
+        "description": "Microsoft Foundry / Azure AI Foundry region selected for Sora 2 preview availability. Event teams must verify Sora 2 quota, entitlement, and regional access before delivery."
+      }
+    }
+  },
+  "variables": {
+    "scripturl": "[concat('https://experienceazure.blob.core.windows.net/templates/', parameters('ODLID'), '/psscript-01.ps1')]",
+    "LabVMName": "[concat('labvm-', parameters('DeploymentID'))]",
+    "vnetName": "[concat('vnet-', parameters('DeploymentID'))]",
+    "subnetName": "default",
+    "nsgName": "[concat('nsg-', parameters('DeploymentID'))]",
+    "publicIpName": "[concat('pip-', parameters('DeploymentID'))]",
+    "nicName": "[concat('nic-', parameters('DeploymentID'))]",
+    "dnsLabel": "[toLower(concat('labvm-', uniqueString(resourceGroup().id, parameters('DeploymentID'))))]",
+    "foundryResourceName": "[toLower(concat('foundry-sora-', uniqueString(resourceGroup().id, parameters('DeploymentID'))))]",
+    "foundryProjectName": "[toLower(concat('proj-sora-', uniqueString(resourceGroup().id, parameters('DeploymentID'))))]",
+    "expectedSoraDeploymentName": "sora2-campaign",
+    "soraModelName": "sora-2",
+    "soraModelVersion": "2025-12-08",
+    "soraDeploymentSkuName": "GlobalStandard",
+    "soraDeploymentCapacity": 1,
+    "foundryPortalUrl": "https://ai.azure.com",
+    "labFilesPath": "C:\\LabFiles\\SoraCampaign",
+    "foundryResourceEndpoint": "[concat('https://', variables('foundryResourceName'), '.cognitiveservices.azure.com/')]",
+    "openAIEndpoint": "[concat('https://', variables('foundryResourceName'), '.openai.azure.com/')]",
+    "userdata": "[concat(variables('scripturl'), ' -AzureUserName ', parameters('azureUserName'), ' -AzurePassword ', parameters('azurePassword'), ' -AzureTenantID ', tenant().tenantId, ' -AzureSubscriptionID ', subscription().subscriptionId, ' -DeploymentID ', parameters('DeploymentID'), ' -vmAdminUsername ', parameters('adminUsername'), ' -vmAdminPassword ', parameters('adminPassword'), ' -trainerUserName ', parameters('trainerUserName'), ' -trainerUserPassword ', parameters('trainerUserPassword'))]"
+  },
+  "resources": [
+    {
+      "type": "Microsoft.Network/networkSecurityGroups",
+      "apiVersion": "2024-07-01",
+      "name": "[variables('nsgName')]",
+      "location": "[parameters('location')]",
+      "properties": {
+        "securityRules": [
+          {
+            "name": "Allow-RDP",
+            "properties": {
+              "priority": 1000,
+              "access": "Allow",
+              "direction": "Inbound",
+              "protocol": "Tcp",
+              "sourcePortRange": "*",
+              "destinationPortRange": "3389",
+              "sourceAddressPrefix": "*",
+              "destinationAddressPrefix": "*"
+            }
+          }
+        ]
+      },
+      "tags": {
+        "CloudLabs": "true",
+        "DeploymentID": "[parameters('DeploymentID')]"
+      }
+    },
+    {
+      "type": "Microsoft.Network/virtualNetworks",
+      "apiVersion": "2024-07-01",
+      "name": "[variables('vnetName')]",
+      "location": "[parameters('location')]",
+      "dependsOn": [
+        "[resourceId('Microsoft.Network/networkSecurityGroups', variables('nsgName'))]"
+      ],
+      "properties": {
+        "addressSpace": {
+          "addressPrefixes": [
+            "10.10.0.0/16"
+          ]
+        },
+        "subnets": [
+          {
+            "name": "[variables('subnetName')]",
+            "properties": {
+              "addressPrefix": "10.10.1.0/24",
+              "networkSecurityGroup": {
+                "id": "[resourceId('Microsoft.Network/networkSecurityGroups', variables('nsgName'))]"
+              }
+            }
+          }
+        ]
+      },
+      "tags": {
+        "CloudLabs": "true",
+        "DeploymentID": "[parameters('DeploymentID')]"
+      }
+    },
+    {
+      "type": "Microsoft.Network/publicIPAddresses",
+      "apiVersion": "2024-07-01",
+      "name": "[variables('publicIpName')]",
+      "location": "[parameters('location')]",
+      "sku": {
+        "name": "Standard"
+      },
+      "properties": {
+        "publicIPAllocationMethod": "Static",
+        "dnsSettings": {
+          "domainNameLabel": "[variables('dnsLabel')]"
+        }
+      },
+      "tags": {
+        "CloudLabs": "true",
+        "DeploymentID": "[parameters('DeploymentID')]"
+      }
+    },
+    {
+      "type": "Microsoft.Network/networkInterfaces",
+      "apiVersion": "2024-07-01",
+      "name": "[variables('nicName')]",
+      "location": "[parameters('location')]",
+      "dependsOn": [
+        "[resourceId('Microsoft.Network/publicIPAddresses', variables('publicIpName'))]",
+        "[resourceId('Microsoft.Network/virtualNetworks', variables('vnetName'))]"
+      ],
+      "properties": {
+        "ipConfigurations": [
+          {
+            "name": "ipconfig1",
+            "properties": {
+              "privateIPAllocationMethod": "Dynamic",
+              "publicIPAddress": {
+                "id": "[resourceId('Microsoft.Network/publicIPAddresses', variables('publicIpName'))]"
+              },
+              "subnet": {
+                "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('vnetName'), variables('subnetName'))]"
+              }
+            }
+          }
+        ]
+      },
+      "tags": {
+        "CloudLabs": "true",
+        "DeploymentID": "[parameters('DeploymentID')]"
+      }
+    },
+    {
+      "type": "Microsoft.Compute/virtualMachines",
+      "apiVersion": "2023-07-01",
+      "name": "[variables('LabVMName')]",
+      "location": "[parameters('location')]",
+      "plan": {
+        "name": "win2019",
+        "publisher": "spektra",
+        "product": "cloudlabs-windows-jumpvm"
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Network/networkInterfaces', variables('nicName'))]"
+      ],
+      "properties": {
+        "hardwareProfile": {
+          "vmSize": "Standard_B2s"
+        },
+        "osProfile": {
+          "computerName": "[variables('LabVMName')]",
+          "adminUsername": "[parameters('adminUsername')]",
+          "adminPassword": "[parameters('adminPassword')]",
+          "windowsConfiguration": {
+            "provisionVMAgent": true,
+            "enableAutomaticUpdates": true
+          }
+        },
+        "storageProfile": {
+          "imageReference": {
+            "publisher": "Spektra",
+            "offer": "cloudlabs-windows-jumpvm",
+            "sku": "win2019",
+            "version": "latest"
+          },
+          "osDisk": {
+            "createOption": "FromImage",
+            "managedDisk": {
+              "storageAccountType": "Standard_LRS"
+            }
+          }
+        },
+        "networkProfile": {
+          "networkInterfaces": [
+            {
+              "id": "[resourceId('Microsoft.Network/networkInterfaces', variables('nicName'))]"
+            }
+          ]
+        },
+        "diagnosticsProfile": {
+          "bootDiagnostics": {
+            "enabled": true
+          }
+        },
+        "userData": "[base64(variables('userdata'))]"
+      },
+      "tags": {
+        "CloudLabs": "true",
+        "DeploymentID": "[parameters('DeploymentID')]"
+      }
+    },
+    {
+      "type": "Microsoft.CognitiveServices/accounts",
+      "apiVersion": "2025-06-01",
+      "name": "[variables('foundryResourceName')]",
+      "location": "[parameters('foundryLocation')]",
+      "kind": "AIServices",
+      "sku": {
+        "name": "S0",
+        "tier": "Standard"
+      },
+      "identity": {
+        "type": "SystemAssigned"
+      },
+      "properties": {
+        "customSubDomainName": "[variables('foundryResourceName')]",
+        "allowProjectManagement": true,
+        "publicNetworkAccess": "Enabled",
+        "disableLocalAuth": false,
+        "dynamicThrottlingEnabled": true,
+        "restrictOutboundNetworkAccess": false,
+        "networkAcls": {
+          "defaultAction": "Allow",
+          "bypass": "AzureServices",
+          "ipRules": [],
+          "virtualNetworkRules": []
+        }
+      },
+      "tags": {
+        "CloudLabs": "true",
+        "DeploymentID": "[parameters('DeploymentID')]",
+        "Lab": "Sora2Campaign",
+        "ResourceExperience": "MicrosoftFoundry",
+        "ExpectedSoraDeployment": "[variables('expectedSoraDeploymentName')]"
+      }
+    },
+    {
+      "type": "Microsoft.CognitiveServices/accounts/deployments",
+      "apiVersion": "2025-07-01-preview",
+      "name": "[concat(variables('foundryResourceName'), '/', variables('expectedSoraDeploymentName'))]",
+      "dependsOn": [
+        "[resourceId('Microsoft.CognitiveServices/accounts', variables('foundryResourceName'))]"
+      ],
+      "sku": {
+        "name": "[variables('soraDeploymentSkuName')]",
+        "capacity": "[variables('soraDeploymentCapacity')]"
+      },
+      "properties": {
+        "model": {
+          "format": "OpenAI",
+          "name": "[variables('soraModelName')]",
+          "publisher": "OpenAI",
+          "version": "[variables('soraModelVersion')]"
+        },
+        "versionUpgradeOption": "NoAutoUpgrade"
+      },
+      "tags": {
+        "CloudLabs": "true",
+        "DeploymentID": "[parameters('DeploymentID')]",
+        "Lab": "Sora2Campaign",
+        "Model": "[variables('soraModelName')]"
+      }
+    },
+    {
+      "type": "Microsoft.CognitiveServices/accounts/projects",
+      "apiVersion": "2025-06-01",
+      "name": "[concat(variables('foundryResourceName'), '/', variables('foundryProjectName'))]",
+      "location": "[parameters('foundryLocation')]",
+      "dependsOn": [
+        "[resourceId('Microsoft.CognitiveServices/accounts', variables('foundryResourceName'))]",
+        "[resourceId('Microsoft.CognitiveServices/accounts/deployments', variables('foundryResourceName'), variables('expectedSoraDeploymentName'))]"
+      ],
+      "identity": {
+        "type": "SystemAssigned"
+      },
+      "properties": {
+        "displayName": "Sora Campaign Lab Project",
+        "description": "Microsoft Foundry project for the Sora 2 eco-friendly product campaign lab. The sora2-campaign Sora 2 deployment is provisioned during lab deployment."
+      },
+      "tags": {
+        "CloudLabs": "true",
+        "DeploymentID": "[parameters('DeploymentID')]",
+        "Lab": "Sora2Campaign",
+        "ExpectedSoraDeployment": "[variables('expectedSoraDeploymentName')]"
+      }
+    }
+  ],
+  "outputs": {
+    "vmServerDnsName": {
+      "type": "string",
+      "value": "[reference(resourceId('Microsoft.Network/publicIPAddresses', variables('publicIpName')), '2024-07-01').dnsSettings.fqdn]"
+    },
+    "vmServerUsername": {
+      "type": "string",
+      "value": "[parameters('adminUsername')]"
+    },
+    "vmServerPassword": {
+      "type": "string",
+      "value": "[parameters('adminPassword')]"
+    },
+    "trainerUserName": {
+      "type": "string",
+      "value": "[parameters('trainerUserName')]"
+    },
+    "trainerUserPassword": {
+      "type": "string",
+      "value": "[parameters('trainerUserPassword')]"
+    },
+    "resourceGroupName": {
+      "type": "string",
+      "value": "[resourceGroup().name]"
+    },
+    "subscriptionId": {
+      "type": "string",
+      "value": "[subscription().subscriptionId]"
+    },
+    "foundryResourceName": {
+      "type": "string",
+      "value": "[variables('foundryResourceName')]"
+    },
+    "foundryProjectName": {
+      "type": "string",
+      "value": "[variables('foundryProjectName')]"
+    },
+    "foundryResourceKind": {
+      "type": "string",
+      "value": "AIServices"
+    },
+    "openAIResourceName": {
+      "type": "string",
+      "value": "[variables('foundryResourceName')]"
+    },
+    "foundryResourceEndpoint": {
+      "type": "string",
+      "value": "[variables('foundryResourceEndpoint')]"
+    },
+    "openAIEndpoint": {
+      "type": "string",
+      "value": "[variables('openAIEndpoint')]"
+    },
+    "foundryLocation": {
+      "type": "string",
+      "value": "[parameters('foundryLocation')]"
+    },
+    "openAILocation": {
+      "type": "string",
+      "value": "[parameters('foundryLocation')]"
+    },
+    "expectedSoraDeploymentName": {
+      "type": "string",
+      "value": "[variables('expectedSoraDeploymentName')]"
+    },
+    "soraModelName": {
+      "type": "string",
+      "value": "[variables('soraModelName')]"
+    },
+    "soraModelVersion": {
+      "type": "string",
+      "value": "[variables('soraModelVersion')]"
+    },
+    "soraDeploymentSkuName": {
+      "type": "string",
+      "value": "[variables('soraDeploymentSkuName')]"
+    },
+    "soraDeploymentResourceId": {
+      "type": "string",
+      "value": "[resourceId('Microsoft.CognitiveServices/accounts/deployments', variables('foundryResourceName'), variables('expectedSoraDeploymentName'))]"
+    },
+    "foundryPortalUrl": {
+      "type": "string",
+      "value": "[variables('foundryPortalUrl')]"
+    },
+    "labFilesPath": {
+      "type": "string",
+      "value": "[variables('labFilesPath')]"
+    },
+    "labVmName": {
+      "type": "string",
+      "value": "[variables('LabVMName')]"
+    },
+    "foundryProjectProvisioningNote": {
+      "type": "string",
+      "value": "This template provisions a Microsoft Foundry resource as Microsoft.CognitiveServices/accounts kind AIServices with project management enabled, a child Foundry project, and a Sora 2 deployment named sora2-campaign. Sora 2 is preview and region/entitlement/quota gated; the event team must confirm access in eastus2 before delivery."
+    }
+  }
+}

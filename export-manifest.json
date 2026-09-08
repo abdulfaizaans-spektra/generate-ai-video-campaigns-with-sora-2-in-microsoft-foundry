@@ -1,0 +1,138 @@
+{
+  "packageId": "9f097db8-3af2-4be0-ae98-2f8ddfab988e",
+  "slug": "generate-ai-video-campaigns-with-sora-2-in-microsoft-foundry-kQXVA",
+  "title": "Generate AI Video Campaigns with Sora 2 in Microsoft Foundry",
+  "version": 1,
+  "exportedAt": "2026-09-08T15:20:41.073Z",
+  "exportTarget": "github_new_repo",
+  "force": false,
+  "deliverableConfig": {
+    "arm": {
+      "stages": 1,
+      "enabled": true
+    },
+    "cse": {
+      "enabled": true
+    },
+    "rbac": {
+      "enabled": true
+    },
+    "policy": {
+      "enabled": true
+    },
+    "readme": {
+      "enabled": true
+    },
+    "labGuide": {
+      "enabled": true,
+      "exercises": 3
+    },
+    "solution": {
+      "enabled": false
+    },
+    "questions": {
+      "count": 0,
+      "enabled": false
+    },
+    "specSheet": {
+      "enabled": true
+    },
+    "validations": {
+      "count": 3,
+      "enabled": true
+    }
+  },
+  "artifacts": [
+    {
+      "path": "DeploymentPackage/deploy-01.json",
+      "kind": "arm",
+      "lintStatus": "passed"
+    },
+    {
+      "path": "DeploymentPackage/deploy-01.parameters.json",
+      "kind": "arm_params",
+      "lintStatus": "passed"
+    },
+    {
+      "path": "DeploymentPackage/psscript-01.ps1",
+      "kind": "psscript",
+      "lintStatus": "passed"
+    },
+    {
+      "path": "LabGuidePackage/Lab Guide/Lab Guide/Exercise-01.md",
+      "kind": "exercise_md",
+      "lintStatus": "passed"
+    },
+    {
+      "path": "LabGuidePackage/Lab Guide/Lab Guide/Exercise-02.md",
+      "kind": "exercise_md",
+      "lintStatus": "passed"
+    },
+    {
+      "path": "LabGuidePackage/Lab Guide/Lab Guide/Exercise-03.md",
+      "kind": "exercise_md",
+      "lintStatus": "passed"
+    },
+    {
+      "path": "LabGuidePackage/Lab Guide/Lab Guide/GettingStarted-V2.md",
+      "kind": "getting_started",
+      "lintStatus": "passed"
+    },
+    {
+      "path": "permissions/CustomARMPolicy/azure-policy.json",
+      "kind": "policy_json",
+      "lintStatus": "passed"
+    },
+    {
+      "path": "permissions/CustomRBAC/custom-rbac-role.json",
+      "kind": "rbac_json",
+      "lintStatus": "passed"
+    },
+    {
+      "path": "Validations/Campaign Prompt Evidence.ps1",
+      "kind": "validation_ps1",
+      "lintStatus": "passed"
+    },
+    {
+      "path": "Validations/Image Variation And Evaluation Complete.ps1",
+      "kind": "validation_ps1",
+      "lintStatus": "passed"
+    },
+    {
+      "path": "Validations/Sora 2 Deployment.ps1",
+      "kind": "validation_ps1",
+      "lintStatus": "passed"
+    },
+    {
+      "path": "LabGuidePackage/Lab Guide/masterdoc.json",
+      "kind": "masterdoc",
+      "lintStatus": null
+    },
+    {
+      "path": "template-config.json",
+      "kind": "template_config",
+      "lintStatus": null
+    }
+  ],
+  "errors": [],
+  "coherence": [
+    {
+      "severity": "error",
+      "rule": "coherence-rbac-missing-provider",
+      "message": "The ARM template deploys microsoft.network/networksecuritygroups, microsoft.network/virtualnetworks, microsoft.network/publicipaddresses, microsoft.network/networkinterfaces, microsoft.compute/virtualmachines, microsoft.cognitiveservices/accounts, microsoft.cognitiveservices/accounts/deployments, microsoft.cognitiveservices/accounts/projects, but the custom RBAC role's Actions never allow these providers/types — the deployment can fail with an authorization error. Add \"microsoft.network/networksecuritygroups/write\", \"microsoft.network/virtualnetworks/write\", \"microsoft.network/publicipaddresses/write\", \"microsoft.network/networkinterfaces/write\", \"microsoft.compute/virtualmachines/write\", \"microsoft.cognitiveservices/accounts/write\", \"microsoft.cognitiveservices/accounts/deployments/write\", \"microsoft.cognitiveservices/accounts/projects/write\" (or the provider wildcard, e.g. \"microsoft.network/*\") to the role's Actions.",
+      "artifactPath": "permissions/CustomRBAC/custom-rbac-role.json"
+    },
+    {
+      "severity": "warning",
+      "rule": "coherence-vm-missing-auto-shutdown",
+      "message": "The template deploys a virtual machine but no auto-shutdown schedule — the VM keeps billing after the session ends. Add a Microsoft.DevTestLab/schedules resource per VM (taskType \"ComputeVmShutdownTask\", name \"shutdown-computevm-<vmName>\") with a dailyRecurrence time.",
+      "artifactPath": "DeploymentPackage/deploy-01.json"
+    }
+  ],
+  "runnability": {
+    "issues": [],
+    "blocking": 0,
+    "warning": 0,
+    "info": 0
+  }
+}

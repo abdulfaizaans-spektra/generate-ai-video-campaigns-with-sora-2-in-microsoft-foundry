@@ -1,0 +1,25 @@
+[
+  {
+    "Name": "Generate AI Video Campaigns with Sora 2 in Microsoft Foundry",
+    "Language": "English",
+    "BaseURL": "https://raw.githubusercontent.com/abdulfaizaans-spektra/generate-ai-video-campaigns-with-sora-2-in-microsoft-foundry/main/LabGuidePackage/Lab%20Guide/Lab%20Guide/",
+    "Files": [
+      {
+        "RawFilePath": "GettingStarted-V2.md",
+        "Order": 1
+      },
+      {
+        "RawFilePath": "Exercise-01.md",
+        "Order": 2
+      },
+      {
+        "RawFilePath": "Exercise-02.md",
+        "Order": 3
+      },
+      {
+        "RawFilePath": "Exercise-03.md",
+        "Order": 4
+      }
+    ]
+  }
+]

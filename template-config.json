@@ -1,0 +1,12 @@
+{
+  "name": "Generate AI Video Campaigns with Sora 2 in Microsoft Foundry",
+  "cloud": "azure",
+  "level": "Intermediate",
+  "deploymentDurationMinutes": 60,
+  "enableLabValidation": true,
+  "hasInlineQuestions": false,
+  "customPolicy": true,
+  "customRbacRole": true,
+  "cloudScope": null,
+  "policyPack": null
+}
