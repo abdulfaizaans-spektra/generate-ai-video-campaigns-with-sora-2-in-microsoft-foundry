@@ -334,9 +334,7 @@
         "project": "[variables('foundryProjectName')]",
         "CloudLabs": "true",
         "DeploymentID": "[parameters('DeploymentID')]",
-        "ResourceExperience": "MicrosoftFoundry",
-        "FoundryPortalExperience": "ProjectBased-NewPortal",
-        "RecommendedSoraDeployment": "[variables('soraDeploymentName')]"
+        "ResourceExperience": "MicrosoftFoundry"
       },
 
       "resources": [
