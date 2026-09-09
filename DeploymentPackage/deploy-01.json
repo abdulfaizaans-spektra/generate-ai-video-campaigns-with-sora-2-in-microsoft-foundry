@@ -31,7 +31,7 @@
       "type": "string",
       "defaultValue": "[resourceGroup().location]",
       "metadata": {
-        "description": "Azure region for the Microsoft Foundry resource, project, and the Sora 2 model deployment. Defaults to the resource group's region, but is kept as its own parameter (unlike the rest of this deployment, which always uses the resource group's region directly) because Sora 2 is a narrowly available preview model — as of this writing it is only confirmed available in eastus2. Because this template deploys the sora-2 model directly, the deployment will FAIL if this resolves to a region where Sora 2 isn't enabled for this subscription. Verify Sora 2 catalog availability for the target region before delivery, or override this parameter to a known-good region such as eastus2."
+        "description": "Azure region for the Microsoft Foundry resource, project, and the Sora 2 model deployment."
       }
     }
   },
