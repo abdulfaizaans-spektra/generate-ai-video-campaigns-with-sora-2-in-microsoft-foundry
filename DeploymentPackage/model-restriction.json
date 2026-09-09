@@ -1,0 +1,44 @@
+{
+  "properties": {
+    "displayName": "Deny Foundry Model Deployments Except Sora 2 (Max Capacity 3)",
+    "policyType": "Custom",
+    "mode": "All",
+    "description": "Denies creation or modification of Microsoft Foundry model deployments, except for a sora-2 model deployment with a capacity (RPM) of 3 or less.",
+    "metadata": {
+      "category": "Microsoft Foundry",
+      "version": "2.0.0"
+    },
+    "parameters": {},
+    "policyRule": {
+      "if": {
+        "allOf": [
+          {
+            "field": "type",
+            "equals": "Microsoft.CognitiveServices/accounts/deployments"
+          },
+          {
+            "not": {
+              "allOf": [
+                {
+                  "field": "Microsoft.CognitiveServices/accounts/deployments/model.format",
+                  "equals": "OpenAI"
+                },
+                {
+                  "field": "Microsoft.CognitiveServices/accounts/deployments/model.name",
+                  "equals": "sora-2"
+                },
+                {
+                  "field": "Microsoft.CognitiveServices/accounts/deployments/sku.capacity",
+                  "lessOrEquals": 3
+                }
+              ]
+            }
+          }
+        ]
+      },
+      "then": {
+        "effect": "deny"
+      }
+    }
+  }
+}
