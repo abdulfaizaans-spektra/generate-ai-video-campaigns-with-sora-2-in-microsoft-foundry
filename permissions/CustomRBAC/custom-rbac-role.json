@@ -1,0 +1,25 @@
+{
+  "Name": "sora2-video-campaign-Candidate",
+  "Description": "Custom RBAC role for the Generate AI Video Campaigns with Sora 2 in Microsoft Foundry candidate sandbox. Grants resource and deployment visibility plus Sora video generation in the Foundry Video playground without model deployment management or key access.",
+  "IsCustom": true,
+  "Actions": [
+    "Microsoft.Resources/subscriptions/resourceGroups/read",
+    "Microsoft.Authorization/*/read",
+    "Microsoft.CognitiveServices/*/read"
+  ],
+  "NotActions": [
+    "Microsoft.Authorization/*/Write",
+    "Microsoft.Authorization/*/Delete"
+  ],
+  "DataActions": [
+    "Microsoft.CognitiveServices/accounts/OpenAI/*/read",
+    "Microsoft.CognitiveServices/accounts/OpenAI/video/generations/*/action",
+    "Microsoft.CognitiveServices/accounts/OpenAI/video/generations/*/delete"
+  ],
+  "NotDataActions": [
+    "Microsoft.CognitiveServices/accounts/OpenAI/stored-completions/read"
+  ],
+  "AssignableScopes": [
+    "/subscriptions/{SUBSCRIPTION_ID}/resourceGroups/rg-candidate-{DEPLOYMENT_ID}"
+  ]
+}
