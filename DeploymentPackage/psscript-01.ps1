@@ -63,6 +63,60 @@ Function CreateCredFile($AzureUserName, $AzurePassword, $AzureTenantID, $AzureSu
 
 CreateCredFile $AzureUserName $AzurePassword $AzureTenantID $AzureSubscriptionID $DeploymentID
 
+# ============================================================
+# Download and Extract Sora 2 Reference Images
+# ============================================================
+
+Function DownloadSoraReferenceImages
+{
+    # Storage Account ZIP URL
+    # Replace this with the actual Blob URL and SAS token.
+    $ReferenceImagesUrl = "https://<storageaccount>.blob.core.windows.net/<container>/sora2-reference-images.zip?<SAS-TOKEN>"
+
+    # Local ZIP file
+    $ZipPath = "C:\LabFiles\sora2-reference-images.zip"
+
+    # Extraction location
+    $ExtractPath = "C:\LabFiles"
+
+
+    Write-Output "Starting Sora 2 reference image download..."
+
+    try
+    {
+        # Download ZIP file
+        Invoke-WebRequest `
+            -Uri $ReferenceImagesUrl `
+            -OutFile $ZipPath `
+            -UseBasicParsing `
+            -ErrorAction Stop
+
+        Write-Output "Sora 2 reference image ZIP downloaded successfully."
+
+
+        # Extract ZIP contents
+        Write-Output "Extracting Sora 2 reference images..."
+
+        Expand-Archive `
+            -Path $ZipPath `
+            -DestinationPath $ExtractPath `
+            -Force `
+            -ErrorAction Stop
+
+        Write-Output "Sora 2 reference images extracted successfully."
+
+        # IMPORTANT:
+        # ZIP file is intentionally retained for future use/troubleshooting.
+        Write-Output "Sora 2 reference image ZIP retained at: $ZipPath"
+    }
+    catch
+    {
+        Write-Error "Failed to download or extract Sora 2 reference images: $($_.Exception.Message)"
+    }
+}
+
+DownloadSoraReferenceImages
+
 Function updateVMShadowFile
 {
 #Replace vmAdminUsernameValue with VM Admin UserName in script content 
