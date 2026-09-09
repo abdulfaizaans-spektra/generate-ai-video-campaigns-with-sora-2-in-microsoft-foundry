@@ -71,7 +71,7 @@ Function DownloadSoraReferenceImages
 {
     # Storage Account ZIP URL
     # Replace this with the actual Blob URL and SAS token.
-    $ReferenceImagesUrl = "https://<storageaccount>.blob.core.windows.net/<container>/sora2-reference-images.zip?<SAS-TOKEN>"
+    $ReferenceImagesUrl = "https://experienceazure.blob.core.windows.net/templates/generate-videos-with-sora-2-in-microsoft-foundry/sora2-reference-images.zip"
 
     # Local ZIP file
     $ZipPath = "C:\LabFiles\sora2-reference-images.zip"
