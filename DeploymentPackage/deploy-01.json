@@ -31,7 +31,7 @@
       "type": "string",
       "defaultValue": "[resourceGroup().location]",
       "metadata": {
-        "description": "Azure region for the Microsoft Foundry resource, project, and the Sora 2 model deployment."
+        "description": "Azure region for the Microsoft Foundry resource and project. Defaults to the resource group's region."
       }
     }
   },
@@ -79,17 +79,7 @@
 
     "foundryHubName": "[concat('foundry-', parameters('DeploymentID'))]",
 
-    "foundryProjectName": "[concat('foundry-project-', parameters('DeploymentID'))]",
-
-    "soraDeploymentName": "sora2-campaign",
-
-    "soraModelName": "sora-2",
-
-    "soraModelVersion": "2025-12-08",
-
-    "soraDeploymentSkuName": "GlobalStandard",
-
-    "soraDeploymentCapacity": 3
+    "foundryProjectName": "[concat('foundry-project-', parameters('DeploymentID'))]"
   },
 
   "resources": [
@@ -346,7 +336,7 @@
         "DeploymentID": "[parameters('DeploymentID')]",
         "ResourceExperience": "MicrosoftFoundry",
         "FoundryPortalExperience": "ProjectBased-NewPortal",
-        "SoraDeployment": "[variables('soraDeploymentName')]"
+        "RecommendedSoraDeployment": "[variables('soraDeploymentName')]"
       },
 
       "resources": [
@@ -371,7 +361,7 @@
 
             "displayName": "Sora Campaign Lab Project",
 
-            "description": "Microsoft Foundry project for the Sora 2 eco-friendly product campaign lab, created as the account's default project."
+            "description": "Microsoft Foundry project for the Sora 2 eco-friendly product campaign lab, created as the account's default project. The sora2-campaign Sora 2 model deployment is created manually after this project is provisioned, not by this template."
           },
 
           "dependsOn": [
@@ -379,38 +369,6 @@
           ]
         }
       ]
-    },
-
-    {
-      "type": "Microsoft.CognitiveServices/accounts/deployments",
-      "apiVersion": "2025-07-01-preview",
-
-      "name": "[concat(variables('foundryHubName'), '/', variables('soraDeploymentName'))]",
-
-      "dependsOn": [
-        "[resourceId('Microsoft.CognitiveServices/accounts', variables('foundryHubName'))]"
-      ],
-
-      "sku": {
-        "name": "[variables('soraDeploymentSkuName')]",
-        "capacity": "[variables('soraDeploymentCapacity')]"
-      },
-
-      "properties": {
-
-        "model": {
-          "format": "OpenAI",
-          "name": "[variables('soraModelName')]",
-          "version": "[variables('soraModelVersion')]"
-        }
-      },
-
-      "tags": {
-        "CloudLabs": "true",
-        "DeploymentID": "[parameters('DeploymentID')]",
-        "Lab": "Sora2Campaign",
-        "Model": "[variables('soraModelName')]"
-      }
     }
   ],
 
@@ -459,26 +417,6 @@
     "Foundry Project Name": {
       "type": "string",
       "value": "[variables('foundryProjectName')]"
-    },
-
-    "Foundry Location": {
-      "type": "string",
-      "value": "[parameters('foundryLocation')]"
-    },
-
-    "Sora Deployment Name": {
-      "type": "string",
-      "value": "[variables('soraDeploymentName')]"
-    },
-
-    "Sora Model Name": {
-      "type": "string",
-      "value": "[variables('soraModelName')]"
-    },
-
-    "Sora Model Version": {
-      "type": "string",
-      "value": "[variables('soraModelVersion')]"
     }
   }
 }
